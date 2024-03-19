@@ -19,23 +19,23 @@ struct superblock {
   uint nlog;         // Number of log blocks
   uint logstart;     // Block number of first log block
   uint inodestart;   // Block number of first inode block
-  uint bmapstart;    // Block number of first free map block
+  uint bmapstart;    // Block number of first free map block, 位图数组在整个文件系统中的起始块号
 };
 
 #define FSMAGIC 0x10203040
 
-#define NDIRECT 12
+#define NDIRECT 11
 #define NINDIRECT (BSIZE / sizeof(uint))
 #define MAXFILE (NDIRECT + NINDIRECT)
 
 // On-disk inode structure
 struct dinode {
-  short type;           // File type
+  short type;           // File type, 0表示空闲
   short major;          // Major device number (T_DEVICE only)
   short minor;          // Minor device number (T_DEVICE only)
   short nlink;          // Number of links to inode in file system
   uint size;            // Size of file (bytes)
-  uint addrs[NDIRECT+1];   // Data block addresses
+  uint addrs[NDIRECT+2];   // Data block addresses
 };
 
 // Inodes per block.
@@ -44,10 +44,11 @@ struct dinode {
 // Block containing inode i
 #define IBLOCK(i, sb)     ((i) / IPB + sb.inodestart)
 
-// Bitmap bits per block
+// Bitmap bits per block 每个位图块中的位图位数
 #define BPB           (BSIZE*8)
 
 // Block of free map containing bit for block b
+// 获得 块b 所在位图块的块号
 #define BBLOCK(b, sb) ((b)/BPB + sb.bmapstart)
 
 // Directory is a file containing a sequence of dirent structures.
